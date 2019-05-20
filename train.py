@@ -135,11 +135,11 @@ class Trainer():
             
             s_output, o_output, v_output, loss = criterion(*((s, o, v, so, ov, vs, ss, oo, vv, so_t, ov_t, vs_t, os_t, vo_t, sv_t) + (s_target_var, o_target_var, v_target_var, meta)))
             
-            s_prec1, s_prec5, s_prec1_output = accuracy_s(s_output.data, s_target, topk=(1, 5))
+            s_prec1, s_prec5, s_prec1_output = accuracy(s_output.data, s_target, topk=(1, 5))
             o_prec1, o_prec5, o_prec1_output = accuracy(o_output.data, o_target, topk=(1, 5))
             v_prec1, v_prec5, v_prec1_output = accuracy(v_output.data, v_target, topk=(1, 5))
 
-            sov_prec1 = s_prec1_output.cpu() * o_prec1_output * v_prec1_output
+            sov_prec1 = s_prec1_output * o_prec1_output * v_prec1_output
             sov_prec1 = sov_prec1.sum(0, keepdim=True)
             sov_prec1 = sov_prec1.mul_(100.0 / input.size(0))
             

@@ -306,7 +306,7 @@ class Charades(data.Dataset):
                     ids.append(vid)
                     times.append(int(np.floor(loc))+1)
             else:
-                for ii in range(0, n-1, GAP):
+                for ii in range(0, n-1, GAP): # skip some frames
                     ## o and v are multilabel
                     o_target = torch.IntTensor(self.o_classes).zero_()
                     v_target = torch.IntTensor(self.v_classes).zero_()

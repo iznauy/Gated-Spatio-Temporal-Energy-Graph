@@ -28,15 +28,18 @@ class AsyncTFBase(nn.Module):
         
         self.num_low_rank = 5
 
-        self.s = nn.Sequential(
-            nn.Linear(dim, 1000),
-            nn.ReLU(),
-            nn.Dropout(p = 0.3),
-            nn.Linear(1000, 1000),
-            nn.ReLU(),
-            nn.Dropout(p = 0.3),
-            nn.Linear(1000, self.s_classes)
-            )
+        # self.s = nn.Sequential(
+        #     nn.Linear(dim, 1000),
+        #     nn.ReLU(),
+        #     nn.Dropout(p = 0.3),
+        #     nn.Linear(1000, 1000),
+        #     nn.ReLU(),
+        #     nn.Dropout(p = 0.3),
+        #     nn.Linear(1000, self.s_classes)
+        #     )
+
+        self.s = nn.Linear(dim, self.s_classes)
+
         self.o = nn.Linear(dim, self.o_classes)
         self.v = nn.Linear(dim, self.v_classes)
         

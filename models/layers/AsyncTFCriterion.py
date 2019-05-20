@@ -188,12 +188,17 @@ class AsyncTFCriterion(nn.Module, MessagePassing):
         self.winsmooth = 1
 
     def forward(self, s, o, v, so, ov, vs, ss, oo, vv, so_t, ov_t, vs_t, os_t, vo_t, sv_t, s_target, o_target, v_target, id_time, n=1, synchronous=False):
+        if s_target.dim() == 1:
+            print('converting Nx1 target to NxC')
+            s_target = Variable(gtmat(s.shape, s_target.data.long()))
+
         if o_target.dim() == 1:
             print('converting Nx1 target to NxC')
             o_target = Variable(gtmat(o.shape, o_target.data.long()))
         if v_target.dim() == 1:
             print('converting Nx1 target to NxC')
             v_target = Variable(gtmat(v.shape, v_target.data.long()))
+        s_target = s_target.float()
         o_target = o_target.float()
         v_target = v_target.float()
         idtime = list(zip(id_time['id'], id_time['time']))
@@ -203,7 +208,7 @@ class AsyncTFCriterion(nn.Module, MessagePassing):
         s_fmsg, o_fmsg, v_fmsg  = self.get_msg(idtime, 'future')
 
         s_loss = self.cross_loss(s, s_target)
-        _qs = torch.nn.Softmax(dim = 1)(s)
+        _qs = torch.nn.Sigmoid()(s)
         o_loss = self.bce_loss(o, o_target) 
         _qo = torch.nn.Sigmoid()(o)
         v_loss = self.bce_loss(v, v_target)
