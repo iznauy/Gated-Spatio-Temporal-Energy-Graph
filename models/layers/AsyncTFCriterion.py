@@ -191,7 +191,6 @@ class AsyncTFCriterion(nn.Module, MessagePassing):
         if s_target.dim() == 1:
             print('converting Nx1 target to NxC')
             s_target = Variable(gtmat(s.shape, s_target.data.long()))
-
         if o_target.dim() == 1:
             print('converting Nx1 target to NxC')
             o_target = Variable(gtmat(o.shape, o_target.data.long()))
@@ -214,20 +213,20 @@ class AsyncTFCriterion(nn.Module, MessagePassing):
         v_loss = self.bce_loss(v, v_target)
         _qv = torch.nn.Sigmoid()(v)
         
-        qs_before_softmax = s.clone()
+        qs_before_sigmoid = s.clone()
         
 
-        qs_before_softmax += torch.bmm(s_msg.unsqueeze(1), ss).squeeze() * self.w_temporal
-        qs_before_softmax += torch.bmm(ss, s_fmsg.unsqueeze(2)).squeeze() * self.w_temporal
-        qs_before_softmax += torch.bmm(o_msg.unsqueeze(1), os_t).squeeze() * self.w_temporal 
-        qs_before_softmax += torch.bmm(so_t, o_fmsg.unsqueeze(2)).squeeze() * self.w_temporal
-        qs_before_softmax += torch.bmm(v_msg.unsqueeze(1), vs_t).squeeze() * self.w_temporal
-        qs_before_softmax += torch.bmm(sv_t, v_fmsg.unsqueeze(2)).squeeze() * self.w_temporal
-        qs_before_softmax += torch.bmm(so, _qo.unsqueeze(2)).squeeze() * self.w_spatio 
-        qs_before_softmax += torch.bmm(_qv.unsqueeze(1), vs).squeeze() * self.w_spatio
+        qs_before_sigmoid += torch.bmm(s_msg.unsqueeze(1), ss).squeeze() * self.w_temporal
+        qs_before_sigmoid += torch.bmm(ss, s_fmsg.unsqueeze(2)).squeeze() * self.w_temporal
+        qs_before_sigmoid += torch.bmm(o_msg.unsqueeze(1), os_t).squeeze() * self.w_temporal
+        qs_before_sigmoid += torch.bmm(so_t, o_fmsg.unsqueeze(2)).squeeze() * self.w_temporal
+        qs_before_sigmoid += torch.bmm(v_msg.unsqueeze(1), vs_t).squeeze() * self.w_temporal
+        qs_before_sigmoid += torch.bmm(sv_t, v_fmsg.unsqueeze(2)).squeeze() * self.w_temporal
+        qs_before_sigmoid += torch.bmm(so, _qo.unsqueeze(2)).squeeze() * self.w_spatio
+        qs_before_sigmoid += torch.bmm(_qv.unsqueeze(1), vs).squeeze() * self.w_spatio
         
-        s_loss += self.cross_loss(qs_before_softmax, s_target)
-        qs = torch.nn.Softmax(dim = 1)(qs_before_softmax)
+        s_loss += self.bce_loss(qs_before_sigmoid, s_target)
+        qs = torch.nn.Sigmoid()(qs_before_sigmoid)
         
         qo_before_sigmoid = o.clone()
 
