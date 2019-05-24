@@ -15,6 +15,7 @@ from PIL import Image
 
 train_annotation_root = "./"
 train_dataset_root = "./"
+cache_dir = "./"
 
 
 def pil_loader(path):
@@ -22,6 +23,24 @@ def pil_loader(path):
     with open(path, 'rb') as f:
         img = Image.open(f)
         return img.convert('RGB')
+
+
+def cache(cachefile):
+    """ Creates a decorator that caches the result to cachefile """
+    def cachedecorator(fn):
+        def newf(*args, **kwargs):
+            print('cachefile {}'.format(cachefile))
+            if os.path.exists(cachefile):
+                with open(cachefile, 'rb') as f:
+                    print("Loading cached result from '%s'" % cachefile)
+                    return pickle.load(f)
+            res = fn(*args, **kwargs)
+            with open(cachefile, 'wb') as f:
+                print("Saving result to cache '%s'" % cachefile)
+                pickle.dump(res, f)
+            return res
+        return newf
+    return cachedecorator
 
 
 class Dataset(object):
@@ -326,7 +345,11 @@ class Vivrd(data.Dataset):
         self.s_classes = self.o_classes
         self.rgb_transform = rgb_transform
         self.target_transform = target_transform
-        self.data = self.prepare()
+
+        cache_name = '{}/{}_{}.pkl'.format(cache_dir,
+                                          self.__class__.__name__, split)
+
+        self.data = cache(cache_name)(self.prepare)()
 
     def prepare(self):
         datasetIds = self.dataset.get_index(self.split)
